@@ -7,12 +7,12 @@
 //
 
 #include <iostream>
+#include <tuple>
 #include "Map.hpp"
 
 int main(int argc, const char * argv[]) {
     // insert code here...
-    std::cout << "Hello, World!\n";
-    Map my_map;
+    Map my_map(make_tuple(0,0,0),make_tuple(9,9,0),10,10,8);
     my_map.display_map(my_map.create_map());
     return 0;
 }
