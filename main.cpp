@@ -60,16 +60,25 @@ stack<tuple<int,int> > get_path_from_start_to_goal(State &current_traversing_sta
     return path;
 }
 
-void display_result(Map &init_map)
-{
+void display_result(Map &init_map, stack<tuple<int,int> > &path,const tuple<int,int> &start_position,const tuple<int,int> &goal_position)
+{   vector<vector<string> > result_map(init_map.get_map_heigth(), vector<string>(init_map.get_map_width(),"."));
+
+    while (!path.empty()) {
+        tuple<int,int> top = path.top();
+        result_map[get<0>(top)][get<1>(top)] = "*";
+        path.pop();
+    }
+
+    result_map[get<0>(start_position)][get<1>(start_position)] = "S";
+    result_map[get<0>(goal_position)][get<1>(goal_position)] = "G";
+
     for(size_t i=0;i<init_map.get_map_heigth();i++)
     {
         for(size_t j=0;i<init_map.get_map_width();j++)
         {
-            auto coordinate = make_tuple(i,j);
-            /// TO BE COMPLETED
-            if(coordinate in path)
+            cout<<result_map[i][j]<<"  ";
         }
+        cout<<endl;
     }
 }
 
@@ -126,7 +135,9 @@ int main(int argc, const char * argv[]) {
         cout<<"Destination found"<<endl;
         State current_traversing_state = *goal_state;
         stack<tuple<int,int> > path = get_path_from_start_to_goal(current_traversing_state, my_map, *start_state);
-        display_result(init_map);  
+        const auto goal_position = make_tuple(get<0>(goal_state->state),get<1>(goal_state->state));
+        const auto start_position = make_tuple(get<0>(start_state->state),get<1>(start_state->state));
+        display_result(init_map,path,start_position,goal_position);  
     }
 
     //Initialze the start position's gcost,fcost,hcost to zero (Done)
