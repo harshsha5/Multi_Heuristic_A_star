@@ -6,7 +6,7 @@
 //  Copyright © 2019 Harsh Sharma. All rights reserved.
 //
 
-
+#include "Map.hpp"
 using namespace std;
 
 #define THRESHOLD 10

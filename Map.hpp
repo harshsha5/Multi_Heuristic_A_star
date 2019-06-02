@@ -13,6 +13,9 @@
 #include <vector>
 #include <tuple>
 #include "state.hpp"
+#include <iostream>
+#include <cfloat>
+#include <cmath>
 
 
 using namespace std;
