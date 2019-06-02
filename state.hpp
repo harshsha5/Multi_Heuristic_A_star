@@ -12,6 +12,7 @@
 #include <stdio.h>
 #include <vector>
 #include <tuple>
+#include "Map.hpp"
 
 using namespace std;
 
@@ -19,14 +20,14 @@ using namespace std;
 class State
 {
     //Can be modelled as a struct
-    public:                                 //Should ideally be private
+    public:                                 //Should ideally be private================
     tuple<int,int,double> state;
     float fcost;
     float gcost;
     float hcost;
     int parent_x;
     int parent_y;
-    tuple<int,int,double> parent_state;   
+    tuple<int,int,double> parent_state;   //===========================
 
     public:
     bool operator < (const State& lhs);
@@ -34,6 +35,8 @@ class State
 
     //bool check_if_state_valid(const Map &my_map) const;
     bool check_if_state_valid(const Map &my_map) const;
+    float get_fcost();
+    double get_heuristic(const tuple<int,int,double> goal_state_tuple) const;
 
 };
 

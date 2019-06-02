@@ -40,7 +40,7 @@ public:
     tuple<int,int,double> get_robot_start_pos();
     tuple<int,int,double> get_robot_goal_pos();
     void display_map(vector<vector<State> > map); //Display map of fcosts
-    double get_heuristic(const int x,const int y,const int x_g,const int y_g); 
+    double map_heuristic(const int x,const int y,const int x_g,const int y_g); 
     friend class State;
     
 };
