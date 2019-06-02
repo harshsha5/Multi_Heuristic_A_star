@@ -6,12 +6,6 @@
 //  Copyright © 2019 Harsh Sharma. All rights reserved.
 //
 
-#include "Map.hpp"
-#include <vector>
-#include <iostream>
-#include <tuple>
-#include <cfloat>
-#include <cmath>
 
 using namespace std;
 
@@ -40,10 +34,12 @@ vector<vector<State> > Map::create_map()
         {   count_y = 0;
             for(auto i2 = i1->begin(); i2 != i1->end(); ++i2) // loops over the "internal" vectors
                 {   count_y ++;
-                    i2->fcost = 0;
+                    i2->fcost = DBL_MAX;
                     i2->gcost = DBL_MAX;
                     i2->hcost = get_heuristic(count_x,count_y,get<0>(robot_goal_pos),get<1>(robot_goal_pos));
                     i2->state = make_tuple(count_x,count_y,0);
+                    i2->parent_x = -1;
+                    i2->parent_y = -1;
                 }
         count_x++;
         }
@@ -75,7 +71,7 @@ void Map::display_map(vector<vector<State> > map)
         }
 }
 
-double Map::get_heuristic(int x,int y,int x_g,int y_g)
+double Map::get_heuristic(const int x,const int y,const int x_g,const int y_g)
 {
     //Assumed Euclidian distance as of now
     return double(sqrt(pow((x-x_g),2) + pow((y-y_g),2)));

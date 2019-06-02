@@ -19,14 +19,21 @@ using namespace std;
 class State
 {
     //Can be modelled as a struct
-    public:
+    public:                                 //Should ideally be private
     tuple<int,int,double> state;
     float fcost;
     float gcost;
     float hcost;
+    int parent_x;
+    int parent_y;
     tuple<int,int,double> parent_state;   
+
+    public:
     bool operator < (const State& lhs);
     bool operator == (const State& lhs);
+
+    //bool check_if_state_valid(const Map &my_map) const;
+    bool check_if_state_valid(const Map &my_map) const;
 
 };
 
