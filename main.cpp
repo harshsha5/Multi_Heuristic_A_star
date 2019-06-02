@@ -9,10 +9,11 @@
 #include <iostream>
 #include <tuple>
 #include <set>
+#include <stack>
 #include "Map.hpp"
 #include "state.hpp"
 
-void add_relevant_states_to_open_list(set<State> &closed_list,set<State> &open_list,vector<vector<State> > &my_map,const State state_expanding, const tuple<int,int,double> &goal_state_tuple)
+void add_relevant_states_to_open_list(const set<State> &closed_list,set<State> &open_list,vector<vector<State> > &my_map,State state_expanding, const tuple<int,int,double> &goal_state_tuple)
 {
     for (int newX = -1; newX <= 1; newX++) 
     {
@@ -25,7 +26,49 @@ void add_relevant_states_to_open_list(set<State> &closed_list,set<State> &open_l
                 gNew = successor_of_expanded_state->gcost + 1.0;
                 hNew = successor_of_expanded_state->get_heuristic(goal_state_tuple);
                 fNew = gNew + hNew;
+                if(successor_of_expanded_state->get_fcost()>fNew)
+                {
+                    successor_of_expanded_state->gcost = gNew;
+                    successor_of_expanded_state->hcost = hNew;
+                    successor_of_expanded_state->fcost = fNew;
+                    //successor_of_expanded_state->parent_x = get<0>(state_expanding.state);
+                    //successor_of_expanded_state->parent_y = get<1>(state_expanding.state);
+                    successor_of_expanded_state->parent_state = &state_expanding;
+                    open_list.insert(*successor_of_expanded_state);
+                }
+                //Add the same from the blog. The cost of path from one state to the other has been assumed 1
             }
+        }
+    }
+}
+
+stack<tuple<int,int> > get_path_from_start_to_goal(State &current_traversing_state, const vector<vector<State> > &my_map, State start_state)
+{
+    stack<tuple<int,int> > path;
+    auto current_x = get<0>(current_traversing_state.state);
+    auto current_y = get<1>(current_traversing_state.state);
+    auto start_x = get<0>(start_state.state);
+    auto start_y = get<1>(start_state.state);
+    //while(current_x != start_x && current_y != start_y)
+    while(!(current_traversing_state==start_state))
+    {
+        path.push(make_tuple(get<0>(current_traversing_state.state),get<0>(current_traversing_state.state)));
+        current_traversing_state = *(current_traversing_state.parent_state);
+    }
+
+    path.push(make_tuple(get<0>(start_state.state),get<1>(start_state.state)));
+    return path;
+}
+
+void display_result(Map &init_map)
+{
+    for(size_t i=0;i<init_map.get_map_heigth();i++)
+    {
+        for(size_t j=0;i<init_map.get_map_width();j++)
+        {
+            auto coordinate = make_tuple(i,j);
+            /// TO BE COMPLETED
+            if(coordinate in path)
         }
     }
 }
@@ -45,31 +88,46 @@ int main(int argc, const char * argv[]) {
     start_state->hcost = 0;
     start_state->fcost = 0;
     // I don't think this has to be zero as long as it has a finite value. it will have minimum fcost
-    start_state->parent_x = get<0>(start_state->state);
-    start_state->parent_y = get<1>(start_state->state);
+    // start_state->parent_x = get<0>(start_state->state);
+    // start_state->parent_y = get<1>(start_state->state);
+    // start_state->parent_x = -2;
+    // start_state->parent_y = -2;
     cout<<"========================================================================================="<<endl;
 
     init_map.display_map(my_map);
 
-    my_map.at(get<0>(robot_start))[get<1>(robot_start)].parent_x = get<0>(robot_start);
-    my_map.at(get<0>(robot_start))[get<1>(robot_start)].parent_y = get<1>(robot_start);
+    // my_map.at(get<0>(robot_start))[get<1>(robot_start)].parent_x = get<0>(robot_start);
+    // my_map.at(get<0>(robot_start))[get<1>(robot_start)].parent_y = get<1>(robot_start);
 
     set<State> open_list;
     set<State> closed_list;
     open_list.insert(my_map.at(get<0>(robot_start))[get<1>(robot_start)]);
 
-
+    bool destination_found = false;
     while(!open_list.empty() && !closed_list.count(*goal_state))
     {
         auto next_state_to_expand = open_list.begin();
+        if(next_state_to_expand->state == goal_state->state)
+        {
+            destination_found = true;
+        }
         closed_list.insert(*next_state_to_expand);
         add_relevant_states_to_open_list(closed_list,open_list,my_map,*next_state_to_expand,goal_state->state);
         open_list.erase(next_state_to_expand);
 
     }
 
-
-
+    if(!destination_found)
+    {
+        cout<<"Path to destination not found"<<endl;
+    }
+    else
+    {
+        cout<<"Destination found"<<endl;
+        State current_traversing_state = *goal_state;
+        stack<tuple<int,int> > path = get_path_from_start_to_goal(current_traversing_state, my_map, *start_state);
+        display_result(init_map);  
+    }
 
     //Initialze the start position's gcost,fcost,hcost to zero (Done)
     //Define a function is_valid to check if a state is valid or not (Done)

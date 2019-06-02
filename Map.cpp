@@ -40,6 +40,7 @@ vector<vector<State> > Map::create_map()
                     i2->state = make_tuple(count_x,count_y,0);
                     i2->parent_x = -1;
                     i2->parent_y = -1;
+                    i2->parent_state = nullptr;
                 }
         count_x++;
         }
@@ -56,7 +57,6 @@ tuple<int,int,double> Map::get_robot_goal_pos()
 {
     return robot_goal_pos;
 }
-
 
 void Map::display_map(vector<vector<State> > map)
 {
@@ -75,4 +75,14 @@ double Map::map_heuristic(const int x,const int y,const int x_g,const int y_g)  
 {
     //Assumed Euclidian distance as of now
     return double(sqrt(pow((x-x_g),2) + pow((y-y_g),2)));
+}
+
+int Map::get_map_heigth()
+{
+    return map_height;
+}
+
+int Map::get_map_width()
+{
+    return map_width;
 }

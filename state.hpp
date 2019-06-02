@@ -27,7 +27,8 @@ class State
     float hcost;
     int parent_x;
     int parent_y;
-    tuple<int,int,double> parent_state;   //===========================
+    State *parent_state;
+    //tuple<int,int,double> parent_state;   //===========================
 
     public:
     bool operator < (const State& lhs);
