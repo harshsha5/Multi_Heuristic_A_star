@@ -33,7 +33,7 @@ vector<vector<State> > Map::create_map()
     for(auto i1 = map.begin(); i1 != map.end(); ++i1) // loops over the "external" vector
         {   count_y = 0;
             for(auto i2 = i1->begin(); i2 != i1->end(); ++i2) // loops over the "internal" vectors
-                {   count_y ++;
+                {  
                     i2->fcost = DBL_MAX;
                     i2->gcost = DBL_MAX;
                     i2->hcost = map_heuristic(count_x,count_y,get<0>(robot_goal_pos),get<1>(robot_goal_pos));
@@ -41,6 +41,7 @@ vector<vector<State> > Map::create_map()
                     i2->parent_x = -1;
                     i2->parent_y = -1;
                     i2->parent_state = nullptr;
+                    count_y ++;
                 }
         count_x++;
         }

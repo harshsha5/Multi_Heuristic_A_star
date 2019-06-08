@@ -14,15 +14,15 @@ using namespace std;
 ///@input Takes the map as the input
 ///@return True if the state is valid else false
 
-bool State::check_if_state_valid(const Map &my_map) const
-{
-    if(get<0>(state)>=0 && get<1>(state)>=0 && get<0>(state)<my_map.map_width && get<1>(state)<my_map.map_height)
-    {
-        return true;
-    }
+// bool State::check_if_state_valid(const int map_width,const int map_height) const
+// {
+//     if(get<0>(state)>=0 && get<1>(state)>=0 && get<0>(state)<map_width && get<1>(state)<map_height)
+//     {
+//         return true;
+//     }
     
-    return false; 
-}
+//     return false; 
+// }
 
 float State::get_fcost()
 {

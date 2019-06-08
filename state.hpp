@@ -9,10 +9,11 @@
 #ifndef State_hpp
 #define State_hpp
 
+#include <iostream>
 #include <stdio.h>
 #include <vector>
 #include <tuple>
-#include "Map.hpp"
+#include <cmath>
 
 using namespace std;
 
@@ -31,17 +32,24 @@ class State
     //tuple<int,int,double> parent_state;   //===========================
 
     public:
-    bool operator < (const State& lhs);
+    bool operator < (const State& lhs) const;
     bool operator == (const State& lhs);
-
+    friend ostream &operator<<( ostream &output, const State &S )
+    { 
+    const auto x = get<0>(S.state);
+    const auto y = get<1>(S.state);
+    output << "(" << x << "," << y << ")";
+    return output;            
+    }
+    
     //bool check_if_state_valid(const Map &my_map) const;
-    bool check_if_state_valid(const Map &my_map) const;
+    // bool check_if_state_valid(const int map_width,const int map_height) const;
     float get_fcost();
     double get_heuristic(const tuple<int,int,double> goal_state_tuple) const;
 
 };
 
-inline bool State::operator < (const State& lhs)
+inline bool State::operator < (const State& lhs) const 
 {//We need to overload "<" to put our struct into a set
     return fcost < lhs.fcost;
 }
