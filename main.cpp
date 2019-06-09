@@ -10,6 +10,7 @@
 #include <tuple>
 #include <set>
 #include <stack>
+#include <queue>
 #include "Map.hpp"
 #include "state.hpp"
 
@@ -58,31 +59,30 @@ void add_relevant_states_to_open_list(const set<State> &closed_list,set<State> &
         }
     }
 }
-
-stack<tuple<int,int> > get_path_from_start_to_goal(State &current_traversing_state, const vector<vector<State> > &my_map, State start_state)
+//====================================================================================================================================================
+stack<tuple<int,int> > get_path_from_start_to_goal(State *current_traversing_state_pointer, const vector<vector<State> > &my_map,const State start_state)
 {
     stack<tuple<int,int> > path;
-    auto current_x = get<0>(current_traversing_state.state);
-    auto current_y = get<1>(current_traversing_state.state);
-    auto start_x = get<0>(start_state.state);
-    auto start_y = get<1>(start_state.state);
-    //while(current_x != start_x && current_y != start_y)
-    while(!(current_traversing_state==start_state))
+
+    while(!(*current_traversing_state_pointer==start_state))
     {
-        path.push(make_tuple(get<0>(current_traversing_state.state),get<0>(current_traversing_state.state)));
-        current_traversing_state = *(current_traversing_state.parent_state);
+        cout<<"Current Traversing state is "<<*current_traversing_state_pointer<<endl;
+        // cout<<*(current_traversing_state.parent_state)<<endl;
+        path.push(make_tuple(get<0>(current_traversing_state_pointer->state),get<1>(current_traversing_state_pointer->state)));
+        current_traversing_state_pointer = current_traversing_state_pointer->parent_state;
     }
 
     path.push(make_tuple(get<0>(start_state.state),get<1>(start_state.state)));
     return path;
 }
 //==============================================================================================================================================
-void display_result(Map &init_map, stack<tuple<int,int> > &path,const tuple<int,int> &start_position,const tuple<int,int> &goal_position)
+void display_result(Map &init_map, queue<State> &path,const tuple<int,int> &start_position,const tuple<int,int> &goal_position)
 {   vector<vector<string> > result_map(init_map.get_map_heigth(), vector<string>(init_map.get_map_width(),"."));
 
     while (!path.empty()) {
-        tuple<int,int> top = path.top();
-        result_map[get<0>(top)][get<1>(top)] = "*";
+        auto present_state = path.front();
+        //cout<<present_state<<endl;
+        result_map[get<0>(present_state.state)][get<1>(present_state.state)] = "*";
         path.pop();
     }
 
@@ -91,7 +91,7 @@ void display_result(Map &init_map, stack<tuple<int,int> > &path,const tuple<int,
 
     for(size_t i=0;i<init_map.get_map_heigth();i++)
     {
-        for(size_t j=0;i<init_map.get_map_width();j++)
+        for(size_t j=0;j<init_map.get_map_width();j++)
         {
             cout<<result_map[i][j]<<"  ";
         }
@@ -106,7 +106,7 @@ void print_set(const set<State> seto)
 }
 //======================================================================================================================================
 int main(int argc, const char * argv[]) {
-    Map init_map(make_tuple(0,0,0),make_tuple(9,9,0),10,10,8);
+    Map init_map(make_tuple(0,0,0),make_tuple(5,9,0),10,10,8); //Handle exception of goal state being within map margin
     vector<vector<State> > my_map = init_map.create_map();
     init_map.display_map(my_map);
     
@@ -120,28 +120,35 @@ int main(int argc, const char * argv[]) {
     start_state->hcost = 0;
     start_state->fcost = 0;
     // I don't think this (hcost and fcost) has to be zero as long as it has a finite value. it will have minimum fcost
-    // start_state->parent_x = get<0>(start_state->state);
-    // start_state->parent_y = get<1>(start_state->state);
-    // start_state->parent_x = -2;
-    // start_state->parent_y = -2;
+    start_state->parent_state = nullptr;
     cout<<"++++++++++++++++++++++++++++++++++++++++++"<<endl;
 
-    init_map.display_map(my_map);
-
-    // my_map.at(get<0>(robot_start))[get<1>(robot_start)].parent_x = get<0>(robot_start);
-    // my_map.at(get<0>(robot_start))[get<1>(robot_start)].parent_y = get<1>(robot_start);
+    //init_map.display_map(my_map);
 
     set<State> open_list;
     set<State> closed_list;
     open_list.insert(my_map.at(get<0>(robot_start))[get<1>(robot_start)]);
 
+    queue<State> q;
+
     bool destination_found = false;
-    while(!open_list.empty() && !closed_list.count(*goal_state))
+    while(!open_list.empty())
     {
         auto next_state_to_expand = open_list.begin();
+
+        q.push(*next_state_to_expand); //This is not the correct way to find the path. The correct way is by backtracking from the goal
+
+        ///Print statements to validate parent and next state is getting assigned correctly
+        // cout<<"Next state to expand is "<<*next_state_to_expand<<"\n";
+        // if(next_state_to_expand->parent_state!=nullptr)
+        //     { 
+        //         cout<<"It's parent is "<<*next_state_to_expand->parent_state<<endl; 
+        //         }
+        
         if(next_state_to_expand->state == goal_state->state)
         {
             destination_found = true;
+            break;
         }
         closed_list.insert(*next_state_to_expand);
         add_relevant_states_to_open_list(closed_list,open_list,my_map,*next_state_to_expand,goal_state->state);
@@ -156,19 +163,20 @@ int main(int argc, const char * argv[]) {
     else
     {
         cout<<"Destination found"<<endl;
-        // State current_traversing_state = *goal_state;
-        // stack<tuple<int,int> > path = get_path_from_start_to_goal(current_traversing_state, my_map, *start_state);
-        // const auto goal_position = make_tuple(get<0>(goal_state->state),get<1>(goal_state->state));
-        // const auto start_position = make_tuple(get<0>(start_state->state),get<1>(start_state->state));
-        // display_result(init_map,path,start_position,goal_position);  
-    }
-
-    //Initialze the start position's gcost,fcost,hcost to zero (Done)
-    //Define a function is_valid to check if a state is valid or not (Done)
-    //Check which state to expand from the open list. Add it to closed list after expanding
-    //Check all its nearby neighbours depending on the grid-connectedness 
-    //See if the new_fcost is lower than the existing. If yes, update the costs and parents. Add state to open set/list
-    
+        // while (!q.empty())
+        // {
+        //     std::cout << ' ' << q.front();
+        //     q.pop();
+        // }
+        cout<<endl;
+        auto current_traversing_state_pointer = goal_state;
+        // cout<<*current_traversing_state_pointer<<*(current_traversing_state_pointer->parent_state)<<endl;
+        // stack<tuple<int,int> > path = get_path_from_start_to_goal(current_traversing_state_pointer, my_map, *start_state);
+        const auto goal_position = make_tuple(get<0>(goal_state->state),get<1>(goal_state->state));
+        const auto start_position = make_tuple(get<0>(start_state->state),get<1>(start_state->state));
+        display_result(init_map,q,start_position,goal_position);  
+        //init_map.display_map(my_map);
+    }   
     return 0;
 }
 

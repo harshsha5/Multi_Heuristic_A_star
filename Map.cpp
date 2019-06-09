@@ -38,8 +38,6 @@ vector<vector<State> > Map::create_map()
                     i2->gcost = DBL_MAX;
                     i2->hcost = map_heuristic(count_x,count_y,get<0>(robot_goal_pos),get<1>(robot_goal_pos));
                     i2->state = make_tuple(count_x,count_y,0);
-                    i2->parent_x = -1;
-                    i2->parent_y = -1;
                     i2->parent_state = nullptr;
                     count_y ++;
                 }
