@@ -104,10 +104,62 @@ void print_set(const set<State> seto)
     for(auto x: seto)
     cout<<x<<endl;
 }
-//======================================================================================================================================
+///======================================================================================================================================
+void expand(State &s,
+            const size_t &i,
+            const int &n,vector<vector<State> > &my_map,
+            vector<vector<State> > &my_map_anchor,
+            vector< set<State> > &open_list,
+            set<State> &open_anchor_list,
+            set<State> &closed_list,
+            set<State> &closed_anchor_list,
+            const tuple<int,int,double> &robot_goal 
+            )
+{
+    for(auto x:open_list)
+    {
+        if(x.find(s) != x.end())
+            x.erase(s);
+    }
+
+    const auto map_width = my_map[0].size();
+    const auto map_height = my_map.size();
+    for (int newX = -1; newX <= 1; newX++) 
+    {
+        for (int newY = -1; newY <= 1; newY++)
+        {   
+            if(check_if_coordinate_is_valid(map_width,map_width,get<0>(s.state) + newX,get<1>(s.state) + newY))
+            {
+                auto *successor_of_expanded_state = &my_map.at(get<0>(s.state) + newX)[get<1>(s.state) + newY];
+                auto *successor_of_expanded_state_in_anchor_map = &my_map_anchor.at(get<0>(s.state) + newX)[get<1>(s.state) + newY];
+                float gNew;
+                gNew = s.gcost + 1.0;
+                if(successor_of_expanded_state->gcost>gNew)
+                    {
+                        successor_of_expanded_state->gcost = gNew;
+                        successor_of_expanded_state->parent_state = &s;
+                        if(closed_list.find(s) == closed_list.end())
+                        {
+                            successor_of_expanded_state_in_anchor_map->calculate_heuristic(static_cast<heuristic>(0),robot_goal);
+                            successor_of_expanded_state_in_anchor_map->gcost = gNew;
+                            successor_of_expanded_state_in_anchor_map->calculate_fcost();
+
+                            //-------- Complete line 12 onwards--------
+                        }
+                    }
+
+                    //Add the same from the blog. The cost of path from one state to the other has been assumed 1
+            }
+        }
+    }
+}
+///======================================================================================================================================
+///MAIN STARTS
 int main(int argc, const char * argv[]) {
+
     Map init_map(make_tuple(0,0,0),make_tuple(5,9,0),10,10,8); //Handle exception of goal state being within map margin
     vector<vector<State> > my_map = init_map.create_map();
+    auto my_map_anchor = my_map;
     init_map.display_map(my_map);
     
     tuple<int,int,double> robot_start = init_map.get_robot_start_pos();
@@ -125,61 +177,62 @@ int main(int argc, const char * argv[]) {
 
     //init_map.display_map(my_map);
 
-    set<State> open_list;
+    ///WEIGHTS
+    const auto w1 = 1;
+    const auto w2 = 1;
+
+    ///MHA* IMPLEMENTATION
+    const auto n = (int)heuristic::Count;       //Number of heuristics
+    vector< set<State> > open_list (n);
+    set<State> open_anchor_list;
     set<State> closed_list;
-    open_list.insert(my_map.at(get<0>(robot_start))[get<1>(robot_start)]);
+    set<State> closed_anchor_list;
 
+    ///Insert the start posiiton in all open lists
+    for(auto x: open_list)
+    {
+        x.insert(my_map.at(get<0>(robot_start))[get<1>(robot_start)]);
+    }
     queue<State> q;
-
     bool destination_found = false;
-    while(!open_list.empty())
+
+    while(!open_anchor_list.empty())
     {
-        auto next_state_to_expand = open_list.begin();
-
-        q.push(*next_state_to_expand); //This is not the correct way to find the path. The correct way is by backtracking from the goal
-
-        ///Print statements to validate parent and next state is getting assigned correctly
-        // cout<<"Next state to expand is "<<*next_state_to_expand<<"\n";
-        // if(next_state_to_expand->parent_state!=nullptr)
-        //     { 
-        //         cout<<"It's parent is "<<*next_state_to_expand->parent_state<<endl; 
-        //         }
-        
-        if(next_state_to_expand->state == goal_state->state)
+        for(size_t i = 1;i<n;i++)
         {
-            destination_found = true;
-            break;
-        }
-        closed_list.insert(*next_state_to_expand);
-        add_relevant_states_to_open_list(closed_list,open_list,my_map,*next_state_to_expand,goal_state->state);
-        // print_set(open_list);
-        open_list.erase(next_state_to_expand);
-    }
+            if(open_list[i].begin()->fcost<=w2*(open_anchor_list.begin())->fcost)
+            {
+                if(goal_state->gcost<=open_list[i].begin()->fcost)
+                   {
+                       destination_found = true ;
+                       break;                       //Handle back pointer here probably
+                   }
 
-    if(!destination_found)
-    {
-        cout<<"Path to destination not found"<<endl;
-    }
-    else
-    {
-        cout<<"Destination found"<<endl;
-        // while (!q.empty())
-        // {
-        //     std::cout << ' ' << q.front();
-        //     q.pop();
-        // }
-        cout<<endl;
-        auto current_traversing_state_pointer = goal_state;
-        // cout<<*current_traversing_state_pointer<<*(current_traversing_state_pointer->parent_state)<<endl;
-        // stack<tuple<int,int> > path = get_path_from_start_to_goal(current_traversing_state_pointer, my_map, *start_state);
-        const auto goal_position = make_tuple(get<0>(goal_state->state),get<1>(goal_state->state));
-        const auto start_position = make_tuple(get<0>(start_state->state),get<1>(start_state->state));
-        display_result(init_map,q,start_position,goal_position);  
-        //init_map.display_map(my_map);
+                auto next_state_to_expand = *(open_list[i].begin());
+                expand(next_state_to_expand,i,n,my_map,my_map_anchor,open_list,open_anchor_list,closed_list,closed_anchor_list,robot_goal);
+            }
+
+            else
+            {
+                if(goal_state->gcost<=open_anchor_list.begin()->fcost)
+                   {
+                       destination_found = true ;
+                       break;                       //Handle back pointer here probably
+                   }
+
+                auto next_state_to_expand = open_anchor_list.begin();
+                expand(next_state_to_expand);
+            }
+        }
     }   
     return 0;
 }
 
+
+//To do
+// - See how to handle raw pointers in class. Issues relating to copying and assigning. Learn overloading for self pointers of a class
+// - Implement Independent MHA*
+// - Implement Shared MHA* 
 
 //Questions
 //How to handle continious angles?

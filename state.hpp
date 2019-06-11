@@ -17,6 +17,13 @@
 
 using namespace std;
 
+enum heuristic { 
+    EUCLIDIAN,                              //signifies closed list
+    BRAY_CURTIS,
+    MANHATTAN, 
+    Count
+    };
+
 
 class State
 {
@@ -32,6 +39,8 @@ class State
     public:
     float get_fcost();
     double get_heuristic(const tuple<int,int,double> goal_state_tuple) const;
+    void calculate_heuristic(const heuristic heuristic,const tuple<int,int,double> goal_state_tuple);
+    void calculate_fcost();
     bool operator < (const State& lhs) const;
     bool operator == (const State& lhs);
     //~State();
